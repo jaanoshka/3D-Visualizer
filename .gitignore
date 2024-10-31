@@ -125,6 +125,8 @@ celerybeat.pid
 .env
 .venv
 env/
+myenv10/
+backend/depth_anything_16k_mix_batch_40_lr_0.0005_epoch_9.pth
 venv/
 ENV/
 env.bak/
