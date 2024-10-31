@@ -1,0 +1,15 @@
+flask
+flask-cors
+psycopg2-binary
+flask-sqlalchemy
+requests
+flask-restful 
+googlemaps
+torch
+open3d
+numpy
+pandas
+matplotlib
+rasterio
+transformers
+scikit-image
