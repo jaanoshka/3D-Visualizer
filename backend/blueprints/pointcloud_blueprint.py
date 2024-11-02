@@ -157,8 +157,7 @@ def generate_pointcloud_with_lat_lon():
             point_cloud.colors = o3d.utility.Vector3dVector(colors)
 
         if point_cloud is not None:
-            point_cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-            poisson_mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud, depth=11)[0]
+            poisson_mesh = create_poisson_mesh(point_cloud)
             
             # Save mesh to a bytes buffer instead of a file
             mesh_buffer = io.BytesIO()
