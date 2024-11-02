@@ -27,63 +27,18 @@ EARTH_RADIUS = 6378137
 center_lat = None
 center_lon = None
 
+def get_rgbd_data(depth, image): 
+    height, width = depth.shape
+    points = []
+    for y in range(height):
+        for x in range(width):
+            z = depth[y, x]
+            r, g, b = image[y, x]
+            points.append([x, y, z, r, g, b])
 
-def get_rgbd_data(address, center_lat, center_lon, zoom_level):
-    try:
-        # Get the satellite image as a PIL image
-        image = get_satellite_image_as_pil(address)
-        print(f'RGB Image shape: {np.asarray(image).shape}')  # Print the shape
+    points_np = np.array(points)
 
-        depth = predict_depth_map(image)
-        print(f"Depth Image shape: {depth.shape}") 
-
-        rgb_data = np.asarray(image)
-        rgb_data = np.clip(rgb_data, 0, 255)  # Ensure RGB values are between 0 and 255
-        rgb_df = pd.DataFrame(rgb_data.reshape(-1, 3), columns=['r', 'g', 'b'])
-
-        #depth_data = depth.reshape(-1)
-        depth_df = pd.DataFrame(depth.flatten(), columns=['Z'])
-
-        '''# Create a grid of x, y coordinates corresponding to the image pixels
-        height, width = depth.shape
-        x_coords, y_coords = np.meshgrid(np.arange(width), np.arange(height))
-
-        # Flatten the coordinate arrays
-        x_coords_flat = x_coords.flatten()
-        y_coords_flat = y_coords.flatten()
-
-        # Add the flattened x, y coordinates to the depth DataFrame
-        depth_df['x'] = x_coords_flat
-        depth_df['y'] = y_coords_flat'''
-
-        # Initialize an array for storing (x, y, z) coordinates
-        points_with_lat_lon = []
-
-        # Loop over every pixel in the depth map
-        for index, row in depth_df.iterrows(): 
-            x = index
-            y = row
-            z = row['Z']  # Depth value at (u, v)
-
-            if z >= 0:   # Depth value at (u, v)
-                # Add the point (x, y, z) to the list
-                points_with_lat_lon.append([x, y, z])
-                
-
-        points_with_lat_lon = pd.DataFrame(points_with_lat_lon, columns=['x', 'y', 'z'])
-
-        # Create a copy of the DataFrame to avoid modifying the original view
-        rgbd_data = rgb_df.copy()
-
-        # Now you can assign new columns to the copy
-        rgbd_data['x'] = points_with_lat_lon['x']
-        rgbd_data['y'] = points_with_lat_lon['y']
-        rgbd_data['z'] = points_with_lat_lon['z']
-
-        return rgbd_data
-
-    except Exception as e:
-        raise ValueError(f"Error creating RGBD image: {str(e)}")
+    return points_np
 
 # Function to convert meters to degrees latitude and longitude
 def meters_to_lat_lon(distance_meters, latitude):
@@ -146,14 +101,21 @@ def generate_pointcloud_with_lat_lon():
         zoom_level = calculate_zoom_for_resolution(center_lat)
         print(f"Calculated zoom: {zoom_level}")
 
-        rgbd_df = get_rgbd_data(address, center_lat, center_lon, zoom_level)
+        # Get the satellite image as a PIL image
+        image = get_satellite_image_as_pil(address).squeeze(0).permute(1, 2, 0).numpy()
+        print(f'RGB Image shape: {np.asarray(image).shape}')  # Print the shape
+        
+        depth = predict_depth_map(image).squeeze(0).numpy() 
+        print(f"Depth Image shape: {depth.shape}") 
 
-        points = rgbd_df[['x', 'y', 'z']].to_numpy()
+        rgbd_np_array = get_rgbd_data(depth, image)
+
+        points = rgbd_np_array[['x', 'y', 'z']]
         point_cloud = o3d.geometry.PointCloud()
         point_cloud.points = o3d.utility.Vector3dVector(points)
 
-        if 'r' in rgbd_df.columns and 'g' in rgbd_df.columns and 'b' in rgbd_df.columns:
-            colors = rgbd_df[['r', 'g', 'b']].to_numpy() / 255.0
+        if 'r' in rgbd_np_array.columns and 'g' in rgbd_np_array.columns and 'b' in rgbd_np_array.columns:
+            colors = rgbd_np_array[['r', 'g', 'b']].to_numpy() / 255.0
             point_cloud.colors = o3d.utility.Vector3dVector(colors)
 
         if point_cloud is not None:

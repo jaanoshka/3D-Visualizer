@@ -24,7 +24,7 @@ def predict_depth_map(image):
     # Predict the depth map
     with torch.no_grad():
         outputs = model(**inputs)
-        predicted_depth = outputs.predicted_depth.squeeze().numpy()  # Add a channel dimension if necessary
+        predicted_depth = outputs.predicted_depth.squeeze(0).numpy()  # Add a channel dimension if necessary
         
     return predicted_depth
 
