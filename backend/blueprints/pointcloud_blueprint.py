@@ -90,25 +90,19 @@ def generate_pointcloud_with_lat_lon():
     try:
         data = request.get_json() 
         address = data['address'] 
-        # Get center latitude and longitude from address
-        geocode_result = gmaps.geocode(address)
-        if not geocode_result:
-            raise ValueError("Invalid address")
 
-        location = geocode_result[0]['geometry']['location']
-        center_lat, center_lon = location['lat'], location['lng']
+        # Get the satellite image as a PIL image and convert it to a NumPy array
+        image = get_satellite_image_as_pil(address)
 
-        zoom_level = calculate_zoom_for_resolution(center_lat)
-        print(f"Calculated zoom: {zoom_level}")
-
-        # Get the satellite image as a PIL image
-        image = get_satellite_image_as_pil(address).squeeze(0).permute(1, 2, 0).numpy()
-        print(f'RGB Image shape: {np.asarray(image).shape}')  # Print the shape
+        image_np = np.asarray(image)  # Convert to NumPy array
+        rgb_data = np.clip(image_np, 0, 255)  # Ensure RGB values are between 0 and 255
+        rgb_df = pd.DataFrame(rgb_data.reshape(-1, 3), columns=['r', 'g', 'b'])
+        print(f'RGB Image shape: {image_np.shape}')  # Print the shape
         
-        depth = predict_depth_map(image).squeeze(0).numpy() 
+        depth = predict_depth_map(image) 
         print(f"Depth Image shape: {depth.shape}") 
 
-        rgbd_np_array = get_rgbd_data(depth, image)
+        rgbd_np_array = get_rgbd_data(depth, image_np)
 
         points = rgbd_np_array[['x', 'y', 'z']]
         point_cloud = o3d.geometry.PointCloud()
@@ -120,16 +114,18 @@ def generate_pointcloud_with_lat_lon():
 
         if point_cloud is not None:
             poisson_mesh = create_poisson_mesh(point_cloud)
-            
-            # Save mesh to a bytes buffer instead of a file
-            mesh_buffer = io.BytesIO()
-            o3d.io.write_triangle_mesh(mesh_buffer, poisson_mesh, write_ascii=True)
-            mesh_buffer.seek(0)
+            poisson_mesh.compute_vertex_normals()
 
-            # Encode the mesh data as base64
-            mesh_base64 = base64.b64encode(mesh_buffer.read()).decode('utf-8')
-
-        return jsonify({"mesh": mesh_base64})
+            # Save mesh to ASCII-format PLY in a text buffer
+            ply_buffer = io.StringIO()
+            o3d.io.write_triangle_mesh(ply_buffer, poisson_mesh, write_ascii=True)
+        
+        # Return the content of the buffer
+        ply_content = ply_buffer.getvalue()
+        ply_buffer.close()
+        
+        # Flask response as plain text
+        return ply_content, 200, {'Content-Type': 'text/plain'}
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
