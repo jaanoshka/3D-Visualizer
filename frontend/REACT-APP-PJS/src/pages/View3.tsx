@@ -3,6 +3,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { PLYLoader } from "three/examples/jsm/loaders/PLYLoader";
 import * as THREE from "three";
+import img2 from "../assets/img2.png";
 
 // Neue Komponente für das rotierende Mesh-Modell
 const RotatingMesh = ({ geometry }: { geometry: THREE.BufferGeometry }) => {
@@ -99,6 +100,7 @@ const View = () => {
       }}
     >
       <h1 style={{ margin: "20px 0" }}>Mesh anzeigen</h1>
+
       <div
         style={{
           width: "80%",

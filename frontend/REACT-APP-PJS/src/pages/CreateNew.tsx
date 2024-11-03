@@ -4,43 +4,6 @@ import img3 from "../assets/img3.png";
 import { useState } from "react";
 import React, { ChangeEvent } from "react";
 
-/*function CreateNew(): JSX.Element {
-  const [vNorthing, setVNorthing] = useState("Northing");
-  const [vEasting, setVEasting] = useState("Easting");
-
-  const [vStreet, setVStreet] = useState("Street");
-  const [vNumber, setVNumber] = useState("Number");
-  const [vCity, setVCity] = useState("City");
-  const [vZIP, setVZIP] = useState("ZIP-Code");
-
-  const click = () => {
-    alert(
-      `Northing: ${vNorthing}, Easting: ${vEasting}, Street: ${vStreet}, Number: ${vNumber}, City: ${vCity}, ZIP-Code: ${vZIP}`
-    );
-  };
-  const changeNorthing = (event: ChangeEvent<HTMLInputElement>) => {
-    setVNorthing(event.target.value);
-  };
-
-  const changeEasting = (event: ChangeEvent<HTMLInputElement>) => {
-    setVEasting(event.target.value);
-  };
-
-  const changeStreet = (event: ChangeEvent<HTMLInputElement>) => {
-    setVStreet(event.target.value);
-  };
-
-  const changeNumber = (event: ChangeEvent<HTMLInputElement>) => {
-    setVNumber(event.target.value);
-  };
-  const changeCity = (event: ChangeEvent<HTMLInputElement>) => {
-    setVCity(event.target.value);
-  };
-  const changeZIP = (event: ChangeEvent<HTMLInputElement>) => {
-    setVZIP(event.target.value);
-  };
-*/
-
 function CreateNew(): JSX.Element {
   const [vNorthing, setVNorthing] = useState("xxx"); // Leerstring für initialen Zustand
   const [vEasting, setVEasting] = useState("");
@@ -73,7 +36,7 @@ function CreateNew(): JSX.Element {
     setVZIP(event.target.value);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const AdresseFront = {
       street: vStreet,
       number: vNumber,
@@ -81,15 +44,21 @@ function CreateNew(): JSX.Element {
       zipCode: vZIP,
     };
 
-    // Speichern in localStorage
-    localStorage.setItem("userData", JSON.stringify(AdresseFront));
+    try {
+      const response = await fetch("http://127.0.0.1:5000/receive-data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(AdresseFront),
+      });
 
-    console.log("Benutzerdaten gespeichert:", AdresseFront);
-    alert("Benutzerdaten gespeichert!");
-
-    console.log("Benutzerdaten:", AdresseFront);
-    alert("Benutzerdaten gesammelt!");
-    alert(JSON.stringify(AdresseFront, null, 2));
+      const result = await response.json();
+      console.log("Server-Antwort:", result);
+      alert("Daten erfolgreich an das Backend gesendet!");
+    } catch (error) {
+      console.error("Fehler beim Senden der Daten:", error);
+    }
   };
 
   return (
