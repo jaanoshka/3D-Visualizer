@@ -37,27 +37,28 @@ function CreateNew(): JSX.Element {
   };
 
   const handleSubmit = async () => {
-    const AdresseFront = {
-      street: vStreet,
-      number: vNumber,
-      city: vCity,
-      zipCode: vZIP,
-    };
+    // Adresse zusammenfassen, um ein einzelnes Adressfeld zu erstellen
+    const address = `${vStreet} ${vNumber}, ${vZIP} ${vCity}`;
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/receive-data", {
+      const response = await fetch("http://localhost:4000/image", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(AdresseFront),
+        body: JSON.stringify({ address }),
       });
+
+      if (!response.ok) {
+        throw new Error("Fehler beim Abrufen des Bildes.");
+      }
 
       const result = await response.json();
       console.log("Server-Antwort:", result);
       alert("Daten erfolgreich an das Backend gesendet!");
     } catch (error) {
       console.error("Fehler beim Senden der Daten:", error);
+      alert("Fehler beim Senden der Daten.");
     }
   };
 
