@@ -11,12 +11,18 @@ app = Flask(__name__, static_folder='static')
 
 # instance of sql alchemy db
 db = SQLAlchemy()
+cors = CORS()
 
 # connection with db
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@flask_db:5432/postgres'
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # Set to 50 MB, adjust as needed
 
 # initializing db
+cors.init_app(
+    app,
+    resources= {r"*": {"origins": "*", "allow_headers": "*", "expose_headers": "*"}},
+    supports_credentials= True
+)
 db.init_app(app)
 
 # import tables

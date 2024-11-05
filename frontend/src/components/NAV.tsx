@@ -17,7 +17,7 @@ function Nav1(): JSX.Element {
           <a href="/CreateUser">Create User</a>
         </li>
         <li>
-          <a href="/View">View</a>
+          <a href="/ImageDisplay">View</a>
         </li>
         <li>
           <a href="/View2">View 2</a>

@@ -1,29 +1,24 @@
-# Verwende ein Node.js Image, um die Anwendung zu bauen
-FROM node:16 AS build
+# Use a Node.js image
+FROM node:16
 
-# Setze das Arbeitsverzeichnis
+# Set the working directory
 WORKDIR /app
 
-# Kopiere package.json und package-lock.json oder yarn.lock in das Arbeitsverzeichnis
-COPY package*.json ./
+# Copy package.json and package-lock.json first
+COPY package.json .
+COPY package-lock.json .
 
-# Installiere die Abhängigkeiten
-RUN npm install
+# Install dependencies
+RUN npm install  # or npm ci if you want a clean install
 
-# Kopiere den Rest des Anwendungs-Codes
+# Install Vite globally (optional)
+RUN npm install -g vite
+
+# Copy the entire app after installing dependencies
 COPY . .
 
-# Baue die Anwendung für die Produktion
-RUN npm run build
+# Expose the port Vite uses (default 5173)
+EXPOSE 5173
 
-# Verwende ein NGINX Image, um die statischen Dateien zu hosten
-FROM nginx:alpine
-
-# Kopiere die gebauten Dateien in den NGINX Container
-COPY --from=build /app/build /usr/share/nginx/html
-
-# Exponiere den Port 80
-EXPOSE 80
-
-# Starte den NGINX Server
-CMD ["nginx", "-g", "daemon off;"]
+# Start Vite
+CMD ["npm", "run", "dev"]

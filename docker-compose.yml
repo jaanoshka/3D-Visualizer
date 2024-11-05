@@ -1,10 +1,8 @@
-version: "3.9"
-
 services:
   flask_app:
     container_name: flask_app
     volumes:
-      - /Users/jasminfabijanov/Documents/GitHub/3D-Visualizer:/app
+      - ./backend:/app/backend
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -13,26 +11,27 @@ services:
     environment:
       - FLASK_ENV=development
       - SQLALCHEMY_DATABASE_URI=postgresql://postgres:postgres@flask_db:5432/postgres
-      - FLASK_APP=backend/app.py # Add this line to tell Flask where the app is
+      - FLASK_APP=app.py
       - FLASK_RUN_PORT=4000
     depends_on:
       - flask_db
     networks:
-      - project_network 
-  
+      - project_network
+
   frontend:
     container_name: frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    command: npm run dev
     ports:
       - "5173:5173"
     environment:
       - NODE_ENV=development
+      - REACT_APP_BACKEND_SERVICE_URL=http://flask_app:4000 
     depends_on:
-      - flask_app
-    networks:
-      - project_network 
+      - flask_app 
+
 
   flask_db:
     container_name: flask_db
@@ -60,9 +59,8 @@ services:
     networks:
       - project_network
 
-
 volumes:
-  pgdata: 
+  pgdata: {}
 
 networks:
   project_network:

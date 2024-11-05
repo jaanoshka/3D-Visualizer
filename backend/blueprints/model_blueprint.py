@@ -9,7 +9,7 @@ model_bp = Blueprint('model_bp', __name__)
 # Load model explicitly on CPU if CUDA is not available
 image_processor = AutoImageProcessor.from_pretrained("depth-anything/Depth-Anything-V2-Base-hf")
 model = AutoModelForDepthEstimation.from_pretrained("depth-anything/Depth-Anything-V2-Base-hf")
-model.load_state_dict(torch.load("/app/backend/depth_anything_16k_mix_batch_40_lr_0.0005_epoch_9.pth", weights_only=True, map_location=torch.device('cpu')))
+model.load_state_dict(torch.load("/app/depth_anything_16k_mix_batch_40_lr_0.0005_epoch_9.pth", weights_only=True, map_location=torch.device('cpu')))
 model.eval()
 
 # Predict depth of input image

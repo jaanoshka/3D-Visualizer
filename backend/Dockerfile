@@ -26,4 +26,4 @@ RUN pip install --timeout=1000 --no-cache-dir -r requirements.txt
 COPY . .
 
 # Start the application
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=4000"]
