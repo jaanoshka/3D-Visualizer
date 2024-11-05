@@ -16,6 +16,7 @@ import ErrorBoundary from "./components/ErrorBoundary"; // Import Error Boundary
 
 function App() {
   const backendUrl = process.env.REACT_APP_BACKEND_SERVICE_URL || ""; // Ensure this is a string
+  console.log(backendUrl)
 
   return (
     <Router>
